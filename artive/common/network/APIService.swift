@@ -21,11 +21,15 @@ enum HTTPMethod: String {
     case delete = "DELETE"
 }
 
-class APIService {
+class APIService : APIServiceProtocol {
     
-    static let shared = APIService()
-    private init() {}
+//    static let shared = APIService()
+//    private init() {}
+    
+    
     private let session = URLSession.shared
+    init() {}
+    
     
     // MARK: requset 생성 분리
     private func createRequest(

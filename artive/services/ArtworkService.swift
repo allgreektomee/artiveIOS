@@ -9,12 +9,16 @@ import Foundation
 import Combine
 
 
-class ArtworkService: ObservableObject {
-    static let share = ArtworkService()
-    private let api = APIService.shared
+class ArtworkService: ArtworkServiceProtocol {
+//    static let share = ArtworkService()
+//    private let api = APIService.shared
+    
+    @Inject var api: APIServiceProtocol
+    init() {}
     
     func getArtworkList() -> AnyPublisher<PageResponse<ArtworkResponse>, Error> {
-        return api.get(url:ArtiveAPI.Artworks).eraseToAnyPublisher()
+    
+        return api.get(url: ArtiveAPI.artworks.url , params: [:]).eraseToAnyPublisher()
     }
     
 }

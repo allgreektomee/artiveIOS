@@ -7,33 +7,33 @@
 
 import Foundation
 
-class ArtiveAPI {
-    static let shared = ArtiveAPI()
-    private init() {}
+enum ArtiveAPI {
+    case login
+    case logout
+    case artworks
+    case artworkDetail(id: Int)
     
-    static let basePath = "/api/v1"
-    
-    static var baseURL : String {
+    static var baseURL: String {
         let host: String
+        // 관리자님의 AppInfoModel 환경 설정 참조
         switch AppInfoModel.shared.serverType {
-            case .DEV:     host = "https://api.artivefor.me"
-            case .REAL:    host = "https://api.artivefor.me"
-            case .STAGING: host = "https://api.artivefor.me"
+        case .DEV:     host = "https://api.artivefor.me"
+        case .REAL:    host = "https://api.artivefor.me"
+        case .STAGING: host = "https://api.artivefor.me"
         }
-        return host + basePath
+        return host + "/api/v1"
     }
-   
-    // MARK: - User (Auth)
-    static let Login = "\(baseURL)/auth/login" //로그인
-    static let Logout = "\(baseURL)/auth/logout"
-    static let MyProfile = "\(baseURL)/users/profile" //시용자 프로필 조회
     
+    var path: String {
+        switch self {
+        case .login: return "/auth/login"
+        case .logout: return "/auth/logout"
+        case .artworks: return "/artworks"
+        case .artworkDetail(let id): return "/artworks/\(id)"
+        }
+    }
     
-    // MARK: - Artwork
-    static let Artworks = "\(baseURL)/artworks" //
-    static func artworkDetail(id: Int) -> String { "\(baseURL)/artworks/\(id)" }
-    
-    static func search(query: String, page: Int) -> String {
-        "\(baseURL)/artworks/search?q=\(query)&page=\(page)"
+    var url: String {
+        return ArtiveAPI.baseURL + self.path
     }
 }
