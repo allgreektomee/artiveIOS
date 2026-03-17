@@ -7,7 +7,7 @@
 import Foundation
 import Combine
 
-class UserViewModel: BaseViewModel {
+class UserViewModel: BindViewModel {
     
     @Published var isLoggedIn: Bool = AuthManager.shared.isAuthenticated // 로그인 여부
     @Published var profile:ProfileResponse? // 내 정보 저장용
@@ -20,7 +20,7 @@ class UserViewModel: BaseViewModel {
     func login(email: String, pw: String) {
         
         let requestBody = LoginRequest(email: email, password: pw)
-        bindApi(userService.login(requestBody: requestBody)){ loginData in
+        bind(userService.login(requestBody: requestBody)){ loginData in
             AuthManager.shared.saveToken(loginData.accessToken)
           
         }

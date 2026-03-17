@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-class ArtworkViewModel: BaseViewModel {
+class ArtworkViewModel: BindViewModel {
     @Published var totalElements: Int = 0
     @Published var artworks: [ArtworkResponse] = []
     
@@ -20,7 +20,7 @@ class ArtworkViewModel: BaseViewModel {
     
     func getArtworkList() {
         
-        bindApi(artworkService.getArtworkList()){ [weak self] (pageData: PageResponse<ArtworkResponse>) in
+        bind(artworkService.getArtworkList()){ [weak self] (pageData: PageResponse<ArtworkResponse>) in
             self?.artworks = pageData.content
         }
     }
