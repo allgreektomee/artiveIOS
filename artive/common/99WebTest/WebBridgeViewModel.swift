@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-class WebBridgeViewModel: ApiViewModel {
+class WebBridgeViewModel: BindViewModel {
     @Inject var bridgeService: WebBridgeServiceProtocol
     @Published var bridgeResponse: [String: Any]?
 

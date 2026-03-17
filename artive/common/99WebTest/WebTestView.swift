@@ -20,14 +20,14 @@ struct WebTestView: View {
     
     var body: some View {
         // 3. 기존 BaseView를 그대로 사용! (로딩 바 등 공통 UI 유지)
-        BaseView(viewModel: webViewModel) {
-            VStack(spacing: 0) {
-                // SwiftUI로 감싼 웹뷰 엔진
-                NativeWebView(url: URL(string: "http://artivefor.me/testpage")!, viewModel: webViewModel)
-                
-                
-            }
-        }
+//        BaseView(viewModel: webViewModel) {
+//            VStack(spacing: 0) {
+//                // SwiftUI로 감싼 웹뷰 엔진
+//                NativeWebView(url: URL(string: "http://artivefor.me/testpage")!, viewModel: webViewModel)
+//                
+//                
+//            }
+//        }
     }
     
 
