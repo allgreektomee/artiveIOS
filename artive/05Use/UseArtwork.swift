@@ -1,5 +1,5 @@
 //
-//  ArtworkViewModel.swift
+//  UseArtwork.swift
 //  artive
 //
 //  Created by 20201385 on 2/5/26.
@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-class ArtworkViewModel: BindViewModel {
+class UseArtwork: BindUse {
     @Published var totalElements: Int = 0
     @Published var artworks: [ArtworkResponse] = []
     

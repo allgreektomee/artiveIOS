@@ -9,8 +9,9 @@ import SwiftUI
 
 struct LoginView: View {
 
+    @Environment(\.presentationMode) var presentationMode
     // 뷰모델 연결
-    @StateObject var viewModel = UserViewModel()
+    @StateObject var useAuth = UseAuth()
     
     @State private var email: String = ""
     @State private var password: String = ""
@@ -31,12 +32,12 @@ struct LoginView: View {
             }
             .padding()
             
-            if viewModel.isLoading {
+            if useAuth.isLoading {
                 ProgressView()
             } else {
                 Button(action: {
                     // 로그인 API 요청
-                    viewModel.login(email: email, pw: password)
+                    useAuth.login(email: email, pw: password)
                 }) {
                     Text("로그인하기")
                         .frame(maxWidth: .infinity)
@@ -47,13 +48,18 @@ struct LoginView: View {
                 }
             }
             
-            Text(viewModel.isLoggedIn ? "로그인 상태: ✅ 성공" : "로그인 상태: ❌ 로그아웃")
+            Text(useAuth.isLoggedIn ? "로그인 상태: ✅ 성공" : "로그인 상태: ❌ 로그아웃")
                 .padding()
             
-            if let error = viewModel.error {
+            if let error = useAuth.error {
                 Text(error.localizedDescription)
                     .foregroundColor(.red)
                     .font(.caption)
+            }
+        }
+        .onChange(of: useAuth.isLoggedIn) { isLoggedIn in
+            if isLoggedIn {
+                presentationMode.wrappedValue.dismiss()
             }
         }
         .padding()

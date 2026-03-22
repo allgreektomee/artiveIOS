@@ -1,13 +1,15 @@
-//
-//  APIService.swift
-//  artive
-//
-//  Created by 20201385 on 2/2/26.
-//
-
 import Foundation
 import Combine
 
+// MARK: - Interface
+protocol APIServiceProtocol {
+    func get<T: Codable>(url: String, params: [String: String]) -> AnyPublisher<T, Error>
+    func post<T: Codable>(url: String, body: Codable) -> AnyPublisher<T, Error>
+    func put<T: Codable>(url: String, body: Codable) -> AnyPublisher<T, Error>
+    func delete<T: Codable>(url: String) -> AnyPublisher<T, Error>
+}
+
+// MARK: - Network Support
 enum NetworkError: Error {
     case invalidURL
     case decodingError
@@ -15,23 +17,16 @@ enum NetworkError: Error {
 }
 
 enum HTTPMethod: String {
-    case get = "GET"
-    case post = "POST"
-    case put = "PUT"
-    case delete = "DELETE"
+    case get = "GET", post = "POST", put = "PUT", delete = "DELETE"
 }
 
-class APIService : APIServiceProtocol {
-    
-//    static let shared = APIService()
-//    private init() {}
-    
+// MARK: - Implementation
+class APIService: BaseService, APIServiceProtocol {
     
     private let session = URLSession.shared
-    init() {}
+    @Inject var storage: ServiceStorageProtocol
     
-    
-    // MARK: requset 생성 분리
+    // MARK: - 1. Request 생성 (토큰 주입 로직 포함)
     private func createRequest(
         url: String,
         method: HTTPMethod,
@@ -40,7 +35,6 @@ class APIService : APIServiceProtocol {
     ) -> URLRequest? {
         guard var components = URLComponents(string: url) else { return nil }
         
-        //  Query Items 설정
         if !params.isEmpty {
             components.queryItems = params.map { URLQueryItem(name: $0.key, value: $0.value) }
         }
@@ -48,25 +42,21 @@ class APIService : APIServiceProtocol {
         guard let finalURL = components.url else { return nil }
         var request = URLRequest(url: finalURL)
         request.httpMethod = method.rawValue
-        
-        // 공통 헤더 설정
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        //  토큰 자동 주입
-        if let token = AuthManager.shared.getToken() {
+        // ✅ [수정] 부모(BaseService)로부터 주입받은 storage를 직접 사용
+        if let token = storage.getToken(), !token.isEmpty {
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-    
-        // 바디 인코딩
+        
         if let body = body {
             request.httpBody = try? JSONEncoder().encode(body)
         }
         
-        
         return request
     }
     
-    // MARK: - 메인 리퀘스트
+    // MARK: - 2. 핵심 실행 로직
     private func request<T: Codable>(
         url: String,
         method: HTTPMethod,
@@ -74,52 +64,34 @@ class APIService : APIServiceProtocol {
         body: Codable? = nil
     ) -> AnyPublisher<T, Error> {
         
-       
         guard let request = createRequest(url: url, method: method, params: params, body: body) else {
             return Fail(error: NetworkError.invalidURL).eraseToAnyPublisher()
         }
         
-        #if DEBUG
-        print("✅ [API REQUEST] \(method.rawValue) : \(url)")
-        if let body = request.httpBody, let str = String(data: body, encoding: .utf8) {
-            print("✅ Body: \(str)")
-        }
-        #endif
-            
+        DLog("🌐 [API REQUEST] \(method.rawValue) : \(url)")
         
         return session.dataTaskPublisher(for: request)
             .handleEvents(receiveOutput: { output in
-                        #if DEBUG
-                        print("✅ [API RESPONSE] : \(url)")
-                        if let str = String(data: output.data, encoding: .utf8) {
-                         
-                            if let json = try? JSONSerialization.jsonObject(with: output.data),
-                               let prettyData = try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted),
-                               let prettyStr = String(data: prettyData, encoding: .utf8) {
-                                print(prettyStr)
-                            } else {
-                                print(str)
-                            }
-                        }
-                        #endif
-                    })
-            .tryMap { output in
-                // 1. 서버가 준 데이터가 몇 바이트인지 확인
-                print("📏 데이터 크기: \(output.data.count) bytes")
-                // 2. 데이터를 문자열로 변환해서 출력
-                if let rawString = String(data: output.data, encoding: .utf8) {
-                    print("📝 서버 응답 원문: \(rawString)")
-                } else {
-                    print("❌ 데이터를 문자열로 변환할 수 없음 (바이너리이거나 비어있음)")
+                #if DEBUG
+                if let str = String(data: output.data, encoding: .utf8) {
+                    DLog("✅ [API RESPONSE] : \(url)\n\(str)")
                 }
+                #endif
+            })
+            .tryMap { [weak self] output in
+                guard let self = self else { throw NetworkError.serverError("인스턴스 해제됨") }
                 
                 let statusCode = (output.response as? HTTPURLResponse)?.statusCode ?? -1
                 
+                // ✅ [수정] 401 Unauthorized 처리 (토큰 만료 시)
                 if statusCode == 401 {
-                        AuthManager.shared.clearToken()
-                        NotificationCenter.default.post(name: NSNotification.Name("LogoutRequired"), object: nil)
-                    }
+                    DLog("⚠️ 401 Unauthorized: 세션 만료, 로그아웃 처리", type: .warning)
+                    self.storage.clearAll() // 부모의 storage 사용
+                    NotificationCenter.default.post(name: NSNotification.Name("LogoutRequired"), object: nil)
+                }
                 
+                // 서버 응답 규격(ApiResponse)에 맞춰 파싱
+                // T는 실제 데이터 모델, ApiResponse는 success, message, data를 담은 공통 포맷
                 let response = try JSONDecoder().decode(ApiResponse<T>.self, from: output.data)
                 
                 if response.success ?? false, let data = response.data {
@@ -127,8 +99,8 @@ class APIService : APIServiceProtocol {
                 } else {
                     throw NSError(
                         domain: "NetworkError",
-                        code: statusCode, // 지금은 http 코드, 추후 서버 코드잇으면 세팅
-                        userInfo: [NSLocalizedDescriptionKey: response.message ?? "서버 미지정 오류 발생"]
+                        code: statusCode,
+                        userInfo: [NSLocalizedDescriptionKey: response.message ?? "서버 오류 발생"]
                     )
                 }
             }
@@ -136,7 +108,7 @@ class APIService : APIServiceProtocol {
             .eraseToAnyPublisher()
     }
     
-
+    // MARK: - 3. Interface 구현 (외부 노출)
     func get<T: Codable>(url: String, params: [String: String] = [:]) -> AnyPublisher<T, Error> {
         request(url: url, method: .get, params: params)
     }
@@ -152,6 +124,4 @@ class APIService : APIServiceProtocol {
     func delete<T: Codable>(url: String) -> AnyPublisher<T, Error> {
         request(url: url, method: .delete)
     }
-
-
 }

@@ -26,7 +26,7 @@ final class DependencyContainer {
     func resolve<T>(type: T.Type) -> T {
         let key = String(describing: type)
         guard let service = services[key] as? T else {
-            // 등록되지 않은 서비스를 호출하면 앱을 멈춰서 개발자에게 알려줌
+            
             fatalError("❌ [DI Error] \(key)가 등록되지 않았습니다. App 메인에서 register를 확인하세요.")
         }
         return service

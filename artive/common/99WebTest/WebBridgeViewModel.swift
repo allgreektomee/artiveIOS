@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-class WebBridgeViewModel: BindViewModel {
+class WebBridgeViewModel: BindUse {
     @Inject var bridgeService: WebBridgeServiceProtocol
     @Published var bridgeResponse: [String: Any]?
 

@@ -9,7 +9,8 @@ import SwiftUI
 
 
 struct ArtworkView: View {
-    @StateObject var viewModel = ArtworkViewModel() // 아까 만든 뷰모델
+    @StateObject var viewModel = UseArtwork() // 아까 만든 뷰모델
+    @ObservedObject var authManager = AuthManager.shared
     
     var body: some View {
         NavigationView {
@@ -25,12 +26,18 @@ struct ArtworkView: View {
                 .navigationTitle("작품 목록")
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            AuthManager.shared.clearToken() // 키체인 토큰삭제
-                            print("로그아웃 완료")
-                        }) {
-                            Image(systemName: "rectangle.portrait.and.arrow.right") // 로그아웃 아이콘
-                                .foregroundColor(.red)
+                        if authManager.isAuthenticated {
+                            Button(action: {
+                                AuthManager.shared.clearToken() // 키체인 토큰삭제
+                                print("로그아웃 완료")
+                            }) {
+                                Image(systemName: "rectangle.portrait.and.arrow.right") // 로그아웃 아이콘
+                                    .foregroundColor(.red)
+                            }
+                        } else {
+                            NavigationLink(destination: LoginView()) {
+                                Text("로그인")
+                            }
                         }
                     }
                 }

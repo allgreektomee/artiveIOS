@@ -9,6 +9,11 @@ import Foundation
 import Combine
 
 
+protocol ArtworkServiceProtocol {
+    func getArtworkList() -> AnyPublisher<PageResponse<ArtworkResponse>, Error>
+}
+
+
 class ArtworkService: ArtworkServiceProtocol {
 //    static let share = ArtworkService()
 //    private let api = APIService.shared

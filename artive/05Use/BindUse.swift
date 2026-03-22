@@ -1,5 +1,5 @@
 //
-//  BaseViewModel.swift
+//  BindUse.swift
 //  NewWonBiz
 //
 //  Created by Park Jae Young on 2/9/26.
@@ -10,10 +10,8 @@ import Foundation
 import Combine
 
 
-class BindViewModel: BaseViewModel {
+class BindUse: BaseUse {
 
- 
-   
     func bind<T>(_ publisher: AnyPublisher<T, Error>,
                         onSuccess: @escaping (T) -> Void,
                         onFailure: ((Error) -> Void)? = nil){

@@ -1,21 +1,20 @@
 //
-//  UserService.swift
+//  ServiceAuth.swift
 //  artive
 //
-//  Created by 20201385 on 2/3/26.
+//  Created by Park Jae Young on 3/19/26.
 //
 
 import Foundation
 import Combine
 
-protocol UserServiceProtocol {
+protocol ServiceAuthProtocol {
     func login(requestBody: LoginRequest) -> AnyPublisher<LoginResponse, Error>
 }
 
 
-class UserService : UserServiceProtocol{
-//    static let share = UserService()
-//    private let api = APIService.shared
+class ServiceAuth : ServiceAuthProtocol{
+
     
     @Inject var api: APIServiceProtocol
     init() {}
@@ -30,7 +29,6 @@ class UserService : UserServiceProtocol{
 //    }
     
 //    func logout(){
-//   
+//
 //    }
 }
-
