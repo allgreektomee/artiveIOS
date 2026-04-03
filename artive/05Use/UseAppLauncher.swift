@@ -17,7 +17,7 @@ class UseAppLauncher: BindUse {
             .delay(for: .seconds(2), scheduler: RunLoop.main)
             .sink { [weak self] _ in
                 DLog("✅ 2초 경과: 화면 전환 실행")
-                self?.destination = .main
+                self?.destination = .login
             }
             .store(in: &cancellables) // BindUse에 선언된 cancellables에 저장
         

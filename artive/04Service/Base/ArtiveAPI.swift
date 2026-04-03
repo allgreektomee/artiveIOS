@@ -12,16 +12,25 @@ enum ArtiveAPI {
     case logout
     case artworks
     case artworkDetail(id: Int)
-    
-    static var baseURL: String {
-        let host: String
-        // 관리자님의 AppInfoModel 환경 설정 참조
+
+    /// REST 베이스 (`https://host/api/v1` 등)
+    private static var apiOrigin: String {
         switch AppInfoModel.shared.serverType {
-        case .DEV:     host = "https://api.artivefor.me"
-        case .REAL:    host = "https://api.artivefor.me"
-        case .STAGING: host = "https://api.artivefor.me"
+        case .DEV, .REAL, .STAGING:
+            return "https://api.artivefor.me"
         }
-        return host + "/api/v1"
+    }
+
+    static var baseURL: String {
+        apiOrigin + "/api/v1"
+    }
+
+    /// Spring `WebSocketConfig`: `/ws/realtime?token=<JWT>`
+    static func realtimeWebSocketURL(accessToken: String) -> URL? {
+        let wsRoot = apiOrigin.replacingOccurrences(of: "https://", with: "wss://")
+        var c = URLComponents(string: wsRoot + "/ws/realtime")
+        c?.queryItems = [URLQueryItem(name: "token", value: accessToken)]
+        return c?.url
     }
     
     var path: String {

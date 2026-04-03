@@ -21,8 +21,9 @@ struct ServiceModule {
         container.register(type: APIServiceProtocol.self, component: APIService())
         container.register(type: ArtworkServiceProtocol.self, component: ArtworkService())
         container.register(type: ServiceAuthProtocol.self, component: ServiceAuth())
-        
-        
+        container.register(type: UseRealtimeSocketLog.self, component: UseRealtimeSocketLog())
+        container.register(type: RealtimeSocketServiceProtocol.self, component: RealtimeSocketService())
+
         // (확장) 추후 WebBridgeService 등도 여기서 등록
         // container.register(type: WebBridgeServiceProtocol.self, component: WebBridgeService())
     }

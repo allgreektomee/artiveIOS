@@ -7,7 +7,8 @@
 import SwiftUI
 
 struct MainVIew: View {
-    @StateObject var useAppLauncher = UseAppLauncher()
+    // 메인에서는 UseAppLauncher를 쓰면 안 됨 — appInfo()가 2초 뒤 destination=.login 을 넣어
+    // BaseView.onChange가 currentScreen을 다시 로그인으로 돌려버림.
     @State private var currentPage = 0
 // ▽ 추가: 세로 페이지 상태를 추적할 변수
     @State private var verticalPageIndex = 0
@@ -15,8 +16,7 @@ struct MainVIew: View {
 
     
     var body: some View {
-        BaseView(baseUse: useAppLauncher) {
-            ZStack {
+        ZStack {
                 // 1. 배경색 (아이보리 톤)
                 Color(red: 0.97, green: 0.97, blue: 0.96).ignoresSafeArea()
                 
@@ -117,11 +117,7 @@ struct MainVIew: View {
                     .padding(.trailing, 20)
                 }
             }
-        }
         .preferredColorScheme(.light)
-        .onAppear {
-            useAppLauncher.appInfo()
-        }
     }
 }
 // 2. 헬퍼 함수: 현재 인덱스가 로그 페이지 범위인지 확인

@@ -16,11 +16,13 @@ class UseAuth: BindUse {
     // 2. 의존성 주입 (DI)
     @Inject var authService: ServiceAuthProtocol
     @Inject var storage: ServiceStorageProtocol
+    @Inject var realtimeSocket: RealtimeSocketServiceProtocol
     
     override init() {
         super.init()
-        // 시작 시 토큰 여부 확인
-        self.isLoggedIn = storage.getToken() != nil
+        // isLoggedIn 은 login() 성공 시에만 true. 저장된 토큰만으로 true 하면
+        // 로그인 화면에 들어왔을 때 아직 버튼도 안 눌렀는데 "성공"으로 보임.
+        // (자동 로그인/메인 스킵은 런처·Root에서 토큰 유무로 따로 처리)
     }
     
     // MARK: - 로그인
@@ -34,9 +36,11 @@ class UseAuth: BindUse {
             // ✅ 싱글톤 대신 주입받은 storage 사용
             self.storage.saveToken(loginData.accessToken)
             self.isLoggedIn = true
+
+            self.realtimeSocket.connect(accessToken: loginData.accessToken)
             
-            DLog("✅ 로그인 성공")
-            self.destination = .main
+            DLog("✅ 로그인 성공 → 소켓 로그 화면")
+            self.destination = .realtimeSocket
         }
     }
     

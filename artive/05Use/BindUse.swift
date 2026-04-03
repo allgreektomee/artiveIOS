@@ -23,7 +23,7 @@ class BindUse: BaseUse {
             .sink(receiveCompletion: { [weak self] completion in
                 if case .failure(_) = completion {
                     if case .failure(let error) = completion {
-                        print("❌ BaseViewModel APIError: \(error)")
+                        print("❌  APIError: \(error)")
                    
                         if let decodingError = error as? DecodingError {
                             switch decodingError {

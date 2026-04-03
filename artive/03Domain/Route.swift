@@ -12,6 +12,7 @@ enum Route: Hashable {
     case launch          // 초기 화면
     case login           // 로그인
     case main            // 메인 홈
+    case realtimeSocket  // 로그인 직후 WebSocket 로그 콘솔
     case webView(url: String) // 공통 웹뷰 (URL 전달 가능)
     
     // 필요 시 파라미터가 있는 화면 추가 가능
